@@ -64,6 +64,7 @@ else: # pragma: no cover
     create_revision = lambda: lambda x: x
 
 PUBLISH_COMMENT = "Publish"
+INITIAL_COMMENT = "Initial version."
 
 
 def contribute_fieldsets(cls):
@@ -327,8 +328,9 @@ class PageAdmin(ModelAdmin):
 
         if obj:
             self.inlines = PAGE_ADMIN_INLINES
-            if not obj.has_publish_permission(request) and not 'published' in self.exclude:
-                self.exclude.append('published')
+            if not obj.has_publish_permission(request):
+                if not 'published' in self.exclude:
+                    self.exclude.append('published')
             elif 'published' in self.exclude:
                 self.exclude.remove('published')
 
@@ -873,9 +875,10 @@ class PageAdmin(ModelAdmin):
             from reversion.models import Version
 
             content_type = ContentType.objects.get_for_model(Page)
-            versions_qs = Version.objects.filter(type=1, content_type=content_type, object_id_int=page.pk)
+            # reversion 1.8+ removes type field, revision filtering must be based on comments
+            versions_qs = Version.objects.filter(content_type=content_type, object_id_int=page.pk)
             deleted = []
-            for version in versions_qs.exclude(revision__comment__exact=PUBLISH_COMMENT):
+            for version in versions_qs.exclude(revision__comment__in=(INITIAL_COMMENT,  PUBLISH_COMMENT)):
                 if not version.revision_id in deleted:
                     revision = version.revision
                     revision.delete()
@@ -1127,7 +1130,7 @@ class PageAdmin(ModelAdmin):
         # page add-plugin
         if page:
             # this only runs when both page and placeholder are not empty.
-            language = request.POST['language'] or get_language_from_request(request)
+            language = request.POST.get('language') or get_language_from_request(request)
             position = CMSPlugin.objects.filter(language=language, placeholder=placeholder).count()
             try:
                 has_reached_plugin_limit(placeholder, plugin_type, language, template=page.get_template())

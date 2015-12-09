@@ -3,6 +3,7 @@
 <script type="text/javascript">
 	var _jQuery = window.jQuery || null;
 	var _$ = window.$;
+	var csrf_cookie_name = "{{CSRF_COOKIE_NAME|default:'csrftoken'}}";
 </script>
 {% endaddtoblock %}
 {% addtoblock "js" %}<script type="text/javascript" src="{% admin_static_url %}js/jquery.min.js"></script>{% endaddtoblock %}
@@ -38,7 +39,7 @@ CMS.$(document).ready(function () {
 	window.$ = _$ || jQuery;
 </script>
 {% endaddtoblock %}
-<div id="cms_toolbar" class="cms_reset" style="display:none;">
+<div id="cms_toolbar" class="cms_reset" style="display:none;" dir="ltr">
 	<!-- start: toolbar -->
 	<div class="cms_toolbar">
 		<div id="cms_toolbar-toggle">
