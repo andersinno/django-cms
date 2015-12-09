@@ -212,17 +212,17 @@ class PagePermissionInlineAdminForm(forms.ModelForm):
         # in danger of causing 414 errors so we fall back to the normal input
         # widget.
         if get_cms_setting('RAW_ID_USERS'):
-            if sub_users.count() < 500:
-                # If there aren't too many users, proceed as normal and use a
-                # raw id field with limit_choices_to
-                limit_choices = True
-                use_raw_id = True
-            elif get_user_permission_level(user) == 0:
+            if get_user_permission_level(user) == 0:
                 # If there are enough choices to possibly cause a 414 request
                 # URI too large error, we only proceed with the raw id field if
                 # the user is a superuser & thus can legitimately circumvent
                 # the limit_choices_to condition.
                 limit_choices = False
+                use_raw_id = True
+            elif sub_users.count() < 500:
+                # If there aren't too many users, proceed as normal and use a
+                # raw id field with limit_choices_to
+                limit_choices = True
                 use_raw_id = True
 
         # We don't use the fancy custom widget if the admin form wants to use a
